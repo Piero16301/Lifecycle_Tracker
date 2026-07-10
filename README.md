@@ -1,4 +1,4 @@
-# lifecycle_tracker
+# Lifecycle Tracker
 
 A new Flutter project.
 
