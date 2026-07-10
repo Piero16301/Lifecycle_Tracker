@@ -33,24 +33,15 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-// EXPLICAR EN LA CHARLA:
-// Usamos 'WidgetsBindingObserver' para que esta clase actúe como un observador
-// del sistema operativo y nos notifique cuando la app cambia de estado.
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _showChild = false;
   int _parentCounter = 0;
-
-  // NUEVO: Variable para guardar el estado actual del ciclo de vida y mostrarlo en la UI
   String _currentLifecycleState = 'Esperando eventos...';
-  // NUEVO: Lista para guardar un historial reciente de eventos de estado
   final List<String> _lifecycleHistory = [];
 
   @override
   void initState() {
     super.initState();
-    // EXPLICAR EN LA CHARLA:
-    // Aquí registramos este widget en el WidgetsBinding para empezar a escuchar al OS.
-    // Es el lugar ideal porque initState solo corren una vez al inicio.
     WidgetsBinding.instance.addObserver(this);
     debugPrint('📱 [App/Parent] initState: Registrado WidgetsBindingObserver.');
   }
@@ -58,22 +49,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // EXPLICAR EN LA CHARLA:
-    // Se ejecuta inmediatamente después de initState.
-    // Aquí ya es seguro usar 'BuildContext' (por ejemplo, para leer Providers o Temas).
     debugPrint('📱 [App/Parent] didChangeDependencies: Contexto listo.');
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    // EXPLICAR EN LA CHARLA:
-    // ¡Punto clave de la teoría! Aquí reaccionamos al sistema operativo.
-    // Muestra en la demo qué pasa cuando minimizas la app o abres las notificaciones.
-    
-    // NUEVO: Variable temporal para el mensaje del evento
     String stateMessage = '';
-    
+
     switch (state) {
       case AppLifecycleState.resumed:
         stateMessage = 'RESUMED: La app volvió a primer plano';
@@ -107,15 +90,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         break;
     }
 
-    // NUEVO: Actualizamos el estado para que la UI reaccione a los cambios del ciclo de vida
     setState(() {
       _currentLifecycleState = state.name.toUpperCase();
-      // Agregamos al inicio de la lista el nuevo evento con la hora actual
       final time = DateTime.now();
-      final timeString = '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}:${time.second.toString().padLeft(2, '0')}';
+      final timeString =
+          '${time.hour.toString().padLeft(2, '0')}:'
+          '${time.minute.toString().padLeft(2, '0')}:'
+          '${time.second.toString().padLeft(2, '0')}';
       _lifecycleHistory.insert(0, '[$timeString] $stateMessage');
-      
-      // Mantenemos solo los últimos 5 eventos para no saturar la pantalla
+
       if (_lifecycleHistory.length > 5) {
         _lifecycleHistory.removeLast();
       }
@@ -124,9 +107,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   void dispose() {
-    // EXPLICAR EN LA CHARLA:
-    // Regla de oro: Todo lo que se registra en el initState se remueve en el dispose.
-    // Si no eliminamos el observador aquí, causaríamos un Memory Leak.
     WidgetsBinding.instance.removeObserver(this);
     debugPrint('📱 [App/Parent] dispose: Removido WidgetsBindingObserver.');
     super.dispose();
@@ -149,7 +129,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
               const SizedBox(height: 20),
 
-              // NUEVO: Contenedor visual para mostrar el estado actual y el historial del ciclo de vida
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 padding: const EdgeInsets.all(16),
@@ -165,7 +144,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                   children: [
                     const Text(
                       'ESTADO DEL SISTEMA',
-                      style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Text(
@@ -177,18 +159,26 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                       ),
                     ),
                     const Divider(),
-                    const Text('Últimos eventos:', style: TextStyle(fontStyle: FontStyle.italic)),
+                    const Text(
+                      'Últimos eventos:',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
                     const SizedBox(height: 8),
-                    ..._lifecycleHistory.map((event) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4),
-                          child: Text(
-                            event, 
-                            style: const TextStyle(fontSize: 12),
-                            textAlign: TextAlign.center,
-                          ),
-                        )),
+                    ..._lifecycleHistory.map(
+                      (event) => Padding(
+                        padding: const EdgeInsets.only(bottom: 4),
+                        child: Text(
+                          event,
+                          style: const TextStyle(fontSize: 12),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
                     if (_lifecycleHistory.isEmpty)
-                      const Text('Aún no hay cambios de estado', style: TextStyle(fontSize: 12)),
+                      const Text(
+                        'Aún no hay cambios de estado',
+                        style: TextStyle(fontSize: 12),
+                      ),
                   ],
                 ),
               ),
@@ -226,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           _parentCounter++;
                         });
                       }
-                    : null, // Deshabilitado si el hijo no existe
+                    : null,
               ),
 
               const Padding(padding: EdgeInsets.all(20.0), child: Divider()),
@@ -251,10 +241,9 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 /// WIDGET HIJO: Demuestra el Ciclo de Vida Local del Widget
 /// ===========================================================================
 class ChildCounterWidget extends StatefulWidget {
-  final int
-  parentData; // Data que viene del padre para disparar didUpdateWidget
-
   const ChildCounterWidget({super.key, required this.parentData});
+
+  final int parentData;
 
   @override
   State<ChildCounterWidget> createState() => _ChildCounterWidgetState();
@@ -266,9 +255,6 @@ class _ChildCounterWidgetState extends State<ChildCounterWidget> {
   @override
   void initState() {
     super.initState();
-    // EXPLICAR EN LA CHARLA:
-    // ¡Primer paso del hijo! Aquí inicializamos variables locales.
-    // Resalta que 'widget.parentData' ya es accesible aquí.
     debugPrint('👶 [Hijo Widget] initState: El hijo ha nacido.');
   }
 
@@ -283,10 +269,6 @@ class _ChildCounterWidgetState extends State<ChildCounterWidget> {
   @override
   void didUpdateWidget(covariant ChildCounterWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // EXPLICAR EN LA CHARLA:
-    // Este método confunde a muchos. Explica que se ejecuta cuando el padre cambia
-    // una propiedad externa (en este caso 'parentData') pero el Estado interno del hijo sobrevive.
-    // Comparamos el valor viejo con el nuevo.
     debugPrint('🔄 [Hijo Widget] didUpdateWidget: El padre cambió de datos.');
     debugPrint(
       '   ↳ Valor anterior: ${oldWidget.parentData} -> Valor nuevo: ${widget.parentData}',
@@ -295,9 +277,6 @@ class _ChildCounterWidgetState extends State<ChildCounterWidget> {
 
   @override
   void dispose() {
-    // EXPLICAR EN LA CHARLA:
-    // ¡Momento del cierre! Muestra cómo al presionar "Destruir" este método limpia la memoria.
-    // Si tuvieras un AnimationController o un Stream aquí, se cerrarían en esta sección.
     debugPrint(
       '🛑 [Hijo Widget] dispose: El hijo ha sido eliminado del árbol de widgets de forma permanente.',
     );
@@ -306,11 +285,6 @@ class _ChildCounterWidgetState extends State<ChildCounterWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // EXPLICAR EN LA CHARLA:
-    // El build se dispara por 3 razones en esta demo:
-    // 1. Cuando nace (después de didChangeDependencies).
-    // 2. Cuando el padre cambia datos (después de didUpdateWidget).
-    // 3. Cuando el propio hijo usa setState interno.
     debugPrint('🎨 [Hijo Widget] build: Renderizando UI del Hijo.');
 
     return Container(
